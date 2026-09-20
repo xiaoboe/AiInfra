@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# 环境变量和密钥
+.env
+.env.*
+
+# 编辑器
+.vscode/
+.idea/
+
+# 操作系统
+.DS_Store
+Thumbs.db
+
+# 模型、数据集和大型输出
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+data/
+outputs/
