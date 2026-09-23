@@ -1,0 +1,11 @@
+build/
+# Local build and profiling artifacts
+*.o
+*.so
+*.a
+*.ncu-rep
+__pycache__/
+.vscode/
+/course2/reduce_smem
+/course3/selfcheck/cpu
+/course3/selfcheck/kernel[0-9]
