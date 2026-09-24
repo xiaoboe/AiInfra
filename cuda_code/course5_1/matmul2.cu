@@ -99,7 +99,7 @@ __global__ void mysgemm_v4(int M, int N, int K, float alpha, float *A, float *B,
 
 std::vector<int> generateSizes() { return {4096}; }
 int main() {
-  int device_id = 7;
+  int device_id = 0;
   checkCudaError(cudaSetDevice(device_id), "cudaSetDevice failed");
   std::vector<int> sizes = generateSizes();
 

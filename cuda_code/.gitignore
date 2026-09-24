@@ -4,6 +4,7 @@ build/
 *.so
 *.a
 *.ncu-rep
+sgemm_benchmark*.csv
 __pycache__/
 .vscode/
 /course2/reduce_smem

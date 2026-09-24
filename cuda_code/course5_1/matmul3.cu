@@ -117,7 +117,7 @@ __global__ void mysgemm_v6(int M, int N, int K, float alpha, float *A, float *B,
 #define CEIL_DIV(M, N) ((M) + (N) - 1) / (N)
 std::vector<int> generateSizes() { return {4096}; }
 int main() {
-  int device_id = 7;
+  int device_id = 0;
   checkCudaError(cudaSetDevice(device_id), "cudaSetDevice failed");
   std::vector<int> sizes = generateSizes();
   // 打开CSV文件
