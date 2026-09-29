@@ -27,31 +27,42 @@ void row_rmsnorm_f32_dim_cpu(float* in, float* weight, float* out, int batch,
   }
 }
 
+// 将 block 内每个线程的局部和相加；只有线程 0 的返回值保证是整个 block 的总和。
+// 使用条件：一维 block，线程数是 32 的整数倍（32～1024），所有线程都调用此函数。
+// 这里使用完整 warp 掩码，不支持直接用不足 32 个线程的 warp 参与归约。
 __inline__ __device__ float block_reduce(float val) {
   const int tid = threadIdx.x;
   const int warpSize = 32;
-  int lane = tid % warpSize;
-  int warp_id = tid / warpSize;
+  int lane = tid % warpSize;     // 当前线程在 warp 内的编号：0～31
+  int warp_id = tid / warpSize;  // 当前线程属于 block 中的第几个 warp
 
-  // Warp-level reduction
+  // 第一级：各 warp 独立求和。val 是每个线程自己的寄存器变量。
+  // offset 依次为 16、8、4、2、1，从 lane + offset 取得对方的 val 并累加。
+  // 完成后，每个 warp 的 lane 0 持有该 warp 内 32 个初始 val 的总和。
   for (int offset = warpSize / 2; offset > 0; offset /= 2)
     val += __shfl_down_sync(0xFFFFFFFF, val, offset);
 
-  // Write warp result to shared memory
-  __shared__ float warpSums[32];  // Max 32 warps per block
+  // 每个 warp 只由 lane 0 写入一个局部和；共享内存用于跨 warp 传递结果。
+  __shared__ float warpSums[32];  // 最多 1024 个线程，即 32 个 warp
   if (lane == 0) {
     warpSums[warp_id] = val;
   }
+  // 等待所有 warp 写完，之后第 0 个 warp 才能读取这些局部和。
   __syncthreads();
 
-  // Final reduction: only first warp participates
+  // 第二级：仅第 0 个 warp 将所有 warp 的局部和再归约一次。
   if (warp_id == 0) {
+    // 向上取整计算 warp 数；不足 32 个局部和时，其余 lane 填 0。
+    // 注意：这里的向上取整不能消除第一级对完整 warp 的要求。
     val = (tid < (blockDim.x + warpSize - 1) / warpSize) ? warpSums[tid] : 0.0f;
     for (int offset = warpSize / 2; offset > 0; offset /= 2)
       val += __shfl_down_sync(0xFFFFFFFF, val, offset);
   } else {
+    // 其他 warp 不参与第二级归约，返回 0。
     val = 0.0f;
   }
+  // 第 0 个 warp 的其他 lane 不保证得到总和，调用者只应从线程 0 取结果。
+  // 若整个 block 都需要总和，调用者还要通过共享内存和同步进行广播。
   return val;
 }
 

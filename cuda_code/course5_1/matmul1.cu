@@ -44,7 +44,7 @@ __global__ void mysgemm_v2(int M, int N, int K, float alpha, float *A, float *B,
 
   float tmp = 0.;
   for (int k = 0; k < K; k += BK) {
-    As[ty * BK + tx]. = A[ty * K + tx];
+    As[ty * BK + tx] = A[ty * K + tx];
     Bs[ty * BN + tx] = B[ty * N + tx];
     __syncthreads();
     A += BK;

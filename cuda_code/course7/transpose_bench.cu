@@ -19,10 +19,11 @@ __global__ void transposeSmem(float *out, float *in, const int nx,
   unsigned int ix = blockDim.x * blockIdx.x + threadIdx.x;
   unsigned int iy = blockDim.y * blockIdx.y + threadIdx.y;
   // linear global memory index for original
-  unsigned int ti = iy * nx + ix;
+  unsigned int ti = iy * nx + ix;//原始坐标（iy,ix）
   // thread index in transposed block
+  //off = iy * bx + ix ，转换成一维索引
   unsigned int bidx = threadIdx.y * blockDim.x + threadIdx.x;
-
+  //转化后 (irow,icol) = (bidx / blockDim.y, bidx % blockDim.y)
   unsigned int irow = bidx / blockDim.y;
   unsigned int icol = bidx % blockDim.y;
   // coordinate in transposed matrix
@@ -32,7 +33,7 @@ __global__ void transposeSmem(float *out, float *in, const int nx,
   // linear global memory index for transposed matrix
   unsigned int to = iy * ny + ix;
 
-  if (ix < nx && iy < ny) {
+  if (ix < ny && iy < nx) {
     tile[threadIdx.y][threadIdx.x] = in[ti];
     __syncthreads();
     out[to] = tile[icol][irow];
@@ -84,7 +85,7 @@ __global__ void transposeSmemUnrollPad(float *out, float *in, int nx, int ny) {
 
   unsigned int to = iy2 * ny + ix2;
 
-  if ((ix + blockDim.x) < nx && iy < ny) {
+  if ((ix + blockDim.x) < ny && iy < nx) {
     unsigned int row_idx = threadIdx.y * (blockDim.x * 2 + IPAD) + threadIdx.x;
     tile[row_idx] = in[ti];
     tile[row_idx + BDIMX] = in[ti + BDIMX];
