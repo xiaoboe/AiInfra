@@ -49,10 +49,10 @@ def save_tensor_bin(tensor, filename):
     print(f"Saved {filename} with shape {tensor.shape}, dtype {tensor_np.dtype}")
 
 # 保存所有张量
-save_tensor_bin(Q, "/home/test_fss/code/cuda_code/course9/Q.bin")
+save_tensor_bin(Q, "/root/autodl-tmp/AiInfra/cuda_code/course9/Q.bin")
 print(Q)
-save_tensor_bin(K, "/home/test_fss/code/cuda_code/course9/K.bin")
-save_tensor_bin(V, "/home/test_fss/code/cuda_code/course9/V.bin")
-save_tensor_bin(O, "/home/test_fss/code/cuda_code/course9/O.bin")
+save_tensor_bin(K, "/root/autodl-tmp/AiInfra/cuda_code/course9/K.bin")
+save_tensor_bin(V, "/root/autodl-tmp/AiInfra/cuda_code/course9/V.bin")
+save_tensor_bin(O, "/root/autodl-tmp/AiInfra/cuda_code/course9/O.bin")
 
 print("✅ All tensors saved as .bin files.")

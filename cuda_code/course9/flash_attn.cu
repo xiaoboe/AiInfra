@@ -36,9 +36,9 @@ using FP = float;
 // BLOCK_M(Br, Brow), BLOCK_N(Bc, Bcol) can be determined at compile time
 // just like offical implementation which use a template kernel to do that
 // Block row size
-const int Br = 2;
+const int Br = 2;//一个线程块负责多少行Q/O
 // Block column size
-const int Bc = 2;
+const int Bc = 2;//一个线程块负责多少行K/V
 // seqlen
 const int input_seq = 4;
 // dim
@@ -79,6 +79,7 @@ __global__ void flash_attention_v2_kernel(FP *Q, FP *K, FP *V, FP *O,
   int groupSeq = (seqlen + Bc - 1) / Bc;
   // parallel process for V[Br, d]
   // group of column
+  //dim维度上要遍历多少组才能处理完
   int groupTx = (dim + Bc - 1) / Bc;
   int groupTy = (dim + Br - 1) / Br;
 
@@ -134,6 +135,12 @@ __global__ void flash_attention_v2_kernel(FP *Q, FP *K, FP *V, FP *O,
             名称	     作用域
             Br(ty)	   	seq_len 上的分块（对应 Q,O 的行数）
             Bc(tx)	   	seq_len 上的分块（对应 K,V 的行数）
+         */
+        /**
+         * keyrow = j * Bc + tx
+         * feature = i * Br + ty
+         * 这里最终坐标应该是 K[keyrow][feature] = K[j * Bc + tx][i * Br + ty]
+         * 即(j*Bc + tx)*dim + (i*Br + ty)
          */
         sK[tx][i * Br + ty] = K[j * Bc * dim + tx * dim + i * Br + ty];
         sV[tx][i * Br + ty] = V[j * Bc * dim + tx * dim + i * Br + ty];

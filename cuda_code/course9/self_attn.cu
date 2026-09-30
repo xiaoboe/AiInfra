@@ -45,7 +45,7 @@ __global__ void naive_nrow_gemm(float *A, float *B, float *C, float a, float b,
     for (int j = 0; j < N; j++) {
       float sum = 0.f;
       for (int k = 0; k < K; k++) {
-        sum += A[i * K + k] * B[j * K + k];
+        sum += A[i * K + k] * B[j * K + k];//这里B[j][k]等价于B转置[k][j]
       }
       C[i * N + j] = a * sum + b * C[i * N + j];
     }
